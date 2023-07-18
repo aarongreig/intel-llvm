@@ -507,15 +507,6 @@ inline pi_result mock_piProgramCreate(pi_context context, const void *il,
   return PI_SUCCESS;
 }
 
-inline pi_result mock_piclProgramCreateWithSource(pi_context context,
-                                                  pi_uint32 count,
-                                                  const char **strings,
-                                                  const size_t *lengths,
-                                                  pi_program *ret_program) {
-  *ret_program = createDummyHandle<pi_program>();
-  return PI_SUCCESS;
-}
-
 inline pi_result mock_piProgramCreateWithBinary(
     pi_context context, pi_uint32 num_devices, const pi_device *device_list,
     const size_t *lengths, const unsigned char **binaries,
@@ -834,15 +825,6 @@ inline pi_result mock_piEnqueueKernelLaunch(
     pi_queue queue, pi_kernel kernel, pi_uint32 work_dim,
     const size_t *global_work_offset, const size_t *global_work_size,
     const size_t *local_work_size, pi_uint32 num_events_in_wait_list,
-    const pi_event *event_wait_list, pi_event *event) {
-  *event = createDummyHandle<pi_event>();
-  return PI_SUCCESS;
-}
-
-inline pi_result mock_piEnqueueNativeKernel(
-    pi_queue queue, void (*user_func)(void *), void *args, size_t cb_args,
-    pi_uint32 num_mem_objects, const pi_mem *mem_list,
-    const void **args_mem_loc, pi_uint32 num_events_in_wait_list,
     const pi_event *event_wait_list, pi_event *event) {
   *event = createDummyHandle<pi_event>();
   return PI_SUCCESS;
@@ -1286,5 +1268,27 @@ inline pi_result mock_piextEnqueueWriteHostPipe(
     pi_bool blocking, void *ptr, size_t size, pi_uint32 num_events_in_waitlist,
     const pi_event *events_waitlist, pi_event *event) {
   *event = createDummyHandle<pi_event>();
+  return PI_SUCCESS;
+}
+
+inline pi_result mock_piextEnablePeerAccess(pi_device command_device,
+                                            pi_device peer_device) {
+  return PI_SUCCESS;
+}
+
+inline pi_result mock_piextDisablePeerAccess(pi_device command_device,
+                                             pi_device peer_device) {
+  return PI_SUCCESS;
+}
+
+inline pi_result
+mock_piextPeerAccessGetInfo(pi_device command_device, pi_device peer_device,
+                            pi_peer_attr attr, size_t param_value_size,
+                            void *param_value, size_t *param_value_size_ret) {
+  if (param_value)
+    *static_cast<pi_int32 *>(param_value) = 1;
+  if (param_value_size_ret)
+    *param_value_size_ret = sizeof(pi_int32);
+
   return PI_SUCCESS;
 }
