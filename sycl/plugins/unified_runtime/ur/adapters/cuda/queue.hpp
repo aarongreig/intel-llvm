@@ -79,7 +79,7 @@ struct ur_queue_handle_t_ {
     urDeviceRelease(Device);
   }
 
-  void computeStreamWaitForBarrierIfNeeded(CUstream Strean, uint32_t StreamI);
+  void computeStreamWaitForBarrierIfNeeded(CUstream Stream, uint32_t StreamI);
   void transferStreamWaitForBarrierIfNeeded(CUstream Stream, uint32_t StreamI);
 
   // get_next_compute/transfer_stream() functions return streams from

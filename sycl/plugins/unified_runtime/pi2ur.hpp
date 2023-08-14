@@ -2150,6 +2150,7 @@ inline pi_result piKernelSetArg(pi_kernel Kernel, pi_uint32 ArgIndex,
 inline pi_result piKernelSetArgPointer(pi_kernel Kernel, pi_uint32 ArgIndex,
                                        size_t ArgSize, const void *ArgValue) {
   std::ignore = ArgSize;
+  ArgValue = *reinterpret_cast<const void *const *>(ArgValue);
   ur_kernel_handle_t UrKernel = reinterpret_cast<ur_kernel_handle_t>(Kernel);
   HANDLE_ERRORS(urKernelSetArgPointer(UrKernel, ArgIndex, nullptr, ArgValue));
 
@@ -2406,8 +2407,8 @@ inline pi_result piProgramRelease(pi_program Program) {
 
 inline pi_result piextKernelSetArgPointer(pi_kernel Kernel, pi_uint32 ArgIndex,
                                           size_t, const void *ArgValue) {
+  ArgValue = *reinterpret_cast<const void *const *>(ArgValue);
   ur_kernel_handle_t UrKernel = reinterpret_cast<ur_kernel_handle_t>(Kernel);
-
   HANDLE_ERRORS(urKernelSetArgPointer(UrKernel, ArgIndex, nullptr, ArgValue));
 
   return PI_SUCCESS;

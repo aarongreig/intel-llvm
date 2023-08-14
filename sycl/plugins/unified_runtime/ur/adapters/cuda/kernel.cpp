@@ -282,7 +282,7 @@ urKernelSetArgPointer(ur_kernel_handle_t hKernel, uint32_t argIndex,
                       const ur_kernel_arg_pointer_properties_t *pProperties,
                       const void *pArgValue) {
   std::ignore = pProperties;
-  hKernel->setKernelArg(argIndex, sizeof(pArgValue), pArgValue);
+  hKernel->setKernelArg(argIndex, sizeof(pArgValue), &pArgValue);
   return UR_RESULT_SUCCESS;
 }
 
