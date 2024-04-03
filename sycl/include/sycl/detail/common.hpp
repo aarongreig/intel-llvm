@@ -191,7 +191,7 @@ inline std::string codeToString(pi_int32 code) {
 #define __SYCL_REPORT_PI_ERR_TO_EXC(expr, exc, str)                            \
   {                                                                            \
     auto code = expr;                                                          \
-    if (code != PI_SUCCESS) {                                                  \
+    if (code != UR_RESULT_SUCCESS) {                                           \
       std::string err_str =                                                    \
           str ? "\n" + std::string(str) + "\n" : std::string{};                \
       throw exc(__SYCL_PI_ERROR_REPORT + sycl::detail::codeToString(code) +    \
@@ -211,7 +211,7 @@ inline std::string codeToString(pi_int32 code) {
 #define __SYCL_REPORT_ERR_TO_EXC_VIA_ERRC(expr, errc)                          \
   {                                                                            \
     auto code = expr;                                                          \
-    if (code != PI_SUCCESS) {                                                  \
+    if (code != UR_RESULT_SUCCESS) {                                           \
       throw sycl::exception(sycl::make_error_code(errc),                       \
                             __SYCL_PI_ERROR_REPORT +                           \
                                 sycl::detail::codeToString(code));             \
