@@ -1293,6 +1293,7 @@ void exec_graph_impl::update(
 void exec_graph_impl::updateImpl(std::shared_ptr<node_impl> Node) {
   auto ContextImpl = sycl::detail::getSyclObjImpl(MContext);
   const sycl::detail::PluginPtr &Plugin = ContextImpl->getPlugin();
+  const sycl::detail::UrPluginPtr &UrPlugin = ContextImpl->getUrPlugin();
   auto DeviceImpl = sycl::detail::getSyclObjImpl(MGraphImpl->getDevice());
 
   // Gather arg information from Node
@@ -1303,7 +1304,7 @@ void exec_graph_impl::updateImpl(std::shared_ptr<node_impl> Node) {
   // Copy NDR desc since we need to modify it
   auto NDRDesc = ExecCG.MNDRDesc;
 
-  pi_kernel PiKernel = nullptr;
+  ur_kernel_handle_t UrKernel = nullptr;
   auto Kernel = ExecCG.MSyclKernel;
   auto KernelBundleImplPtr = ExecCG.MKernelBundle;
   std::shared_ptr<sycl::detail::kernel_impl> SyclKernelImpl = nullptr;
@@ -1321,13 +1322,13 @@ void exec_graph_impl::updateImpl(std::shared_ptr<node_impl> Node) {
     kernel SyclKernel =
         KernelBundleImplPtr->get_kernel(KernelID, KernelBundleImplPtr);
     SyclKernelImpl = sycl::detail::getSyclObjImpl(SyclKernel);
-    PiKernel = SyclKernelImpl->getHandleRef();
+    UrKernel = SyclKernelImpl->getUrHandleRef();
     EliminatedArgMask = SyclKernelImpl->getKernelArgMask();
   } else if (Kernel != nullptr) {
-    PiKernel = Kernel->getHandleRef();
+    UrKernel = Kernel->getUrHandleRef();
     EliminatedArgMask = Kernel->getKernelArgMask();
   } else {
-    std::tie(PiKernel, std::ignore, EliminatedArgMask, std::ignore) =
+    std::tie(UrKernel, std::ignore, EliminatedArgMask, std::ignore) =
         sycl::detail::ProgramManager::getInstance().getOrCreateKernel(
             ContextImpl, DeviceImpl, ExecCG.MKernelName);
   }
@@ -1351,11 +1352,10 @@ void exec_graph_impl::updateImpl(std::shared_ptr<node_impl> Node) {
   if (NDRDesc.LocalSize[0] != 0)
     LocalSize = &NDRDesc.LocalSize[0];
   else {
-    Plugin->call<sycl::detail::PiApiKind::piKernelGetGroupInfo>(
-        PiKernel, DeviceImpl->getHandleRef(),
-        PI_KERNEL_GROUP_INFO_COMPILE_WORK_GROUP_SIZE, sizeof(RequiredWGSize),
-        RequiredWGSize,
-        /* param_value_size_ret = */ nullptr);
+    UrPlugin->call(urKernelGetGroupInfo, UrKernel, DeviceImpl->getUrHandleRef(),
+                   UR_KERNEL_GROUP_INFO_COMPILE_WORK_GROUP_SIZE,
+                   sizeof(RequiredWGSize), RequiredWGSize,
+                   /* param_value_size_ret = */ nullptr);
 
     const bool EnforcedLocalSize =
         (RequiredWGSize[0] != 0 || RequiredWGSize[1] != 0 ||
