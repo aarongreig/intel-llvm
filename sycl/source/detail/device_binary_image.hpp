@@ -10,6 +10,7 @@
 #include <sycl/detail/common.hpp>
 #include <sycl/detail/os_util.hpp>
 #include <sycl/detail/pi.hpp>
+#include <ur_api.h>
 
 #include <atomic>
 #include <cstring>
@@ -211,6 +212,9 @@ public:
   }
   const PropertyRange &getAssertUsed() const { return AssertUsed; }
   const PropertyRange &getProgramMetadata() const { return ProgramMetadata; }
+  const std::vector<ur_program_metadata_t> &getProgramMetadataUR() const {
+    return ProgramMetadataUR;
+  }
   const PropertyRange &getExportedSymbols() const { return ExportedSymbols; }
   const PropertyRange &getDeviceGlobals() const { return DeviceGlobals; }
   const PropertyRange &getDeviceRequirements() const {
@@ -240,6 +244,8 @@ protected:
   RTDeviceBinaryImage::PropertyRange DeviceGlobals;
   RTDeviceBinaryImage::PropertyRange DeviceRequirements;
   RTDeviceBinaryImage::PropertyRange HostPipes;
+
+  std::vector<ur_program_metadata_t> ProgramMetadataUR;
 
 private:
   static std::atomic<uintptr_t> ImageCounter;
