@@ -34,9 +34,9 @@ namespace ext::oneapi::experimental {
 
 /// Opaque unsampled image handle type.
 struct unsampled_image_handle {
-  using raw_image_handle_type = pi_uint64;
+  using raw_image_handle_type = ur_exp_image_handle_t;
 
-  unsampled_image_handle() : raw_handle(~0) {}
+  unsampled_image_handle() : raw_handle(nullptr) {}
 
   unsampled_image_handle(raw_image_handle_type raw_image_handle)
       : raw_handle(raw_image_handle) {}
@@ -46,9 +46,9 @@ struct unsampled_image_handle {
 
 /// Opaque sampled image handle type.
 struct sampled_image_handle {
-  using raw_image_handle_type = pi_uint64;
+  using raw_image_handle_type = ur_exp_image_handle_t;
 
-  sampled_image_handle() : raw_handle(~0) {}
+  sampled_image_handle() : raw_handle(nullptr) {}
 
   sampled_image_handle(raw_image_handle_type raw_image_handle)
       : raw_handle(raw_image_handle) {}
@@ -1354,12 +1354,12 @@ void write_image_array(unsampled_image_handle imageHandle [[maybe_unused]],
 
 #ifdef __SYCL_DEVICE_ONLY__
   if constexpr (detail::is_recognized_standard_type<DataT>()) {
-    __invoke__ImageArrayWrite(static_cast<uint64_t>(imageHandle.raw_handle),
+    __invoke__ImageArrayWrite(imageHandle.raw_handle,
                               coords, arrayLayer, color);
   } else {
     // Convert DataT to a supported backend write type when user-defined type is
     // passed
-    __invoke__ImageArrayWrite(static_cast<uint64_t>(imageHandle.raw_handle),
+    __invoke__ImageArrayWrite(imageHandle.raw_handle,
                               coords, arrayLayer, detail::convert_color(color));
   }
 #else
