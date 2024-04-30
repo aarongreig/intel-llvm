@@ -20,7 +20,8 @@ namespace sycl {
 inline namespace _V1 {
 namespace detail::enqueue_kernel_launch {
 
-void handleInvalidWorkGroupSize(const device_impl &DeviceImpl, pi_kernel Kernel,
+void handleInvalidWorkGroupSize(const device_impl &DeviceImpl,
+                                ur_kernel_handle_t Kernel,
                                 const NDRDescT &NDRDesc) {
   sycl::platform Platform = DeviceImpl.get_platform();
 
@@ -45,18 +46,17 @@ void handleInvalidWorkGroupSize(const device_impl &DeviceImpl, pi_kernel Kernel,
     IsCuda = true;
   }
 
-  const PluginPtr &Plugin = DeviceImpl.getPlugin();
-  sycl::detail::pi::PiDevice Device = DeviceImpl.getHandleRef();
+  const UrPluginPtr &Plugin = DeviceImpl.getUrPlugin();
+  ur_device_handle_t Device = DeviceImpl.getUrHandleRef();
 
   size_t CompileWGSize[3] = {0};
-  Plugin->call<PiApiKind::piKernelGetGroupInfo>(
-      Kernel, Device, PI_KERNEL_GROUP_INFO_COMPILE_WORK_GROUP_SIZE,
-      sizeof(size_t) * 3, CompileWGSize, nullptr);
+  Plugin->call(urKernelGetGroupInfo, Kernel, Device,
+               UR_KERNEL_GROUP_INFO_COMPILE_WORK_GROUP_SIZE, sizeof(size_t) * 3,
+               CompileWGSize, nullptr);
 
   size_t MaxWGSize = 0;
-  Plugin->call<PiApiKind::piDeviceGetInfo>(Device,
-                                           PI_DEVICE_INFO_MAX_WORK_GROUP_SIZE,
-                                           sizeof(size_t), &MaxWGSize, nullptr);
+  Plugin->call(urDeviceGetInfo, Device, UR_DEVICE_INFO_MAX_WORK_GROUP_SIZE,
+               sizeof(size_t), &MaxWGSize, nullptr);
 
   const bool HasLocalSize = (NDRDesc.LocalSize[0] != 0);
 
@@ -97,9 +97,8 @@ void handleInvalidWorkGroupSize(const device_impl &DeviceImpl, pi_kernel Kernel,
 
   if (HasLocalSize) {
     size_t MaxThreadsPerBlock[3] = {};
-    Plugin->call<PiApiKind::piDeviceGetInfo>(
-        Device, PI_DEVICE_INFO_MAX_WORK_ITEM_SIZES, sizeof(MaxThreadsPerBlock),
-        MaxThreadsPerBlock, nullptr);
+    Plugin->call(urDeviceGetInfo, Device, UR_DEVICE_INFO_MAX_WORK_ITEM_SIZES,
+                 sizeof(MaxThreadsPerBlock), MaxThreadsPerBlock, nullptr);
 
     for (size_t I = 0; I < 3; ++I) {
       if (MaxThreadsPerBlock[I] < NDRDesc.LocalSize[I]) {
@@ -136,9 +135,9 @@ void handleInvalidWorkGroupSize(const device_impl &DeviceImpl, pi_kernel Kernel,
     // than the value specified by PI_KERNEL_GROUP_INFO_WORK_GROUP_SIZE in
     // table 5.21.
     size_t KernelWGSize = 0;
-    Plugin->call<PiApiKind::piKernelGetGroupInfo>(
-        Kernel, Device, PI_KERNEL_GROUP_INFO_WORK_GROUP_SIZE, sizeof(size_t),
-        &KernelWGSize, nullptr);
+    Plugin->call(urKernelGetGroupInfo, Kernel, Device,
+                 UR_KERNEL_GROUP_INFO_WORK_GROUP_SIZE, sizeof(size_t),
+                 &KernelWGSize, nullptr);
     const size_t TotalNumberOfWIs =
         NDRDesc.LocalSize[0] * NDRDesc.LocalSize[1] * NDRDesc.LocalSize[2];
     if (TotalNumberOfWIs > KernelWGSize)
@@ -190,18 +189,16 @@ void handleInvalidWorkGroupSize(const device_impl &DeviceImpl, pi_kernel Kernel,
           // by global_work_size is not evenly divisible by size of work-group
           // given by local_work_size
 
-          pi_program Program = nullptr;
-          Plugin->call<PiApiKind::piKernelGetInfo>(
-              Kernel, PI_KERNEL_INFO_PROGRAM, sizeof(pi_program), &Program,
-              nullptr);
+          ur_program_handle_t Program = nullptr;
+          Plugin->call(urKernelGetInfo, Kernel, UR_KERNEL_INFO_PROGRAM,
+                       sizeof(ur_program_handle_t), &Program, nullptr);
           size_t OptsSize = 0;
-          Plugin->call<PiApiKind::piProgramGetBuildInfo>(
-              Program, Device, PI_PROGRAM_BUILD_INFO_OPTIONS, 0, nullptr,
-              &OptsSize);
+          Plugin->call(urProgramGetBuildInfo, Program, Device,
+                       UR_PROGRAM_BUILD_INFO_OPTIONS, 0, nullptr, &OptsSize);
           std::string Opts(OptsSize, '\0');
-          Plugin->call<PiApiKind::piProgramGetBuildInfo>(
-              Program, Device, PI_PROGRAM_BUILD_INFO_OPTIONS, OptsSize,
-              &Opts.front(), nullptr);
+          Plugin->call(urProgramGetBuildInfo, Program, Device,
+                       UR_PROGRAM_BUILD_INFO_OPTIONS, OptsSize, &Opts.front(),
+                       nullptr);
           const bool HasStd20 = Opts.find("-cl-std=CL2.0") != std::string::npos;
           const bool RequiresUniformWGSize =
               Opts.find("-cl-uniform-work-group-size") != std::string::npos;
@@ -256,9 +253,8 @@ void handleInvalidWorkGroupSize(const device_impl &DeviceImpl, pi_kernel Kernel,
           NDRDesc.LocalSize[0] * NDRDesc.LocalSize[1] * NDRDesc.LocalSize[2];
 
       uint32_t NumRegisters = 0;
-      Plugin->call<PiApiKind::piKernelGetGroupInfo>(
-          Kernel, Device, PI_KERNEL_GROUP_INFO_NUM_REGS, sizeof(NumRegisters),
-          &NumRegisters, nullptr);
+      Plugin->call(urKernelGetInfo, Kernel, UR_KERNEL_INFO_NUM_REGS,
+                   sizeof(NumRegisters), &NumRegisters, nullptr);
 
       uint32_t MaxRegistersPerBlock =
           DeviceImpl.get_info<ext::codeplay::experimental::info::device::
@@ -304,14 +300,13 @@ void handleInvalidWorkGroupSize(const device_impl &DeviceImpl, pi_kernel Kernel,
 void handleInvalidWorkItemSize(const device_impl &DeviceImpl,
                                const NDRDescT &NDRDesc) {
 
-  const PluginPtr &Plugin = DeviceImpl.getPlugin();
-  sycl::detail::pi::PiDevice Device = DeviceImpl.getHandleRef();
+  const UrPluginPtr &Plugin = DeviceImpl.getUrPlugin();
+  ur_device_handle_t Device = DeviceImpl.getUrHandleRef();
 
   size_t MaxWISize[] = {0, 0, 0};
 
-  Plugin->call<PiApiKind::piDeviceGetInfo>(
-      Device, PI_DEVICE_INFO_MAX_WORK_ITEM_SIZES, sizeof(MaxWISize), &MaxWISize,
-      nullptr);
+  Plugin->call(urDeviceGetInfo, Device, UR_DEVICE_INFO_MAX_WORK_ITEM_SIZES,
+               sizeof(MaxWISize), &MaxWISize, nullptr);
   for (unsigned I = 0; I < NDRDesc.Dims; I++) {
     if (NDRDesc.LocalSize[I] > MaxWISize[I])
       throw sycl::nd_range_error(
@@ -324,13 +319,12 @@ void handleInvalidWorkItemSize(const device_impl &DeviceImpl,
 
 void handleInvalidValue(const device_impl &DeviceImpl,
                         const NDRDescT &NDRDesc) {
-  const PluginPtr &Plugin = DeviceImpl.getPlugin();
-  sycl::detail::pi::PiDevice Device = DeviceImpl.getHandleRef();
+  const UrPluginPtr &Plugin = DeviceImpl.getUrPlugin();
+  ur_device_handle_t Device = DeviceImpl.getUrHandleRef();
 
   size_t MaxNWGs[] = {0, 0, 0};
-  Plugin->call<PiApiKind::piDeviceGetInfo>(
-      Device, PI_EXT_ONEAPI_DEVICE_INFO_MAX_WORK_GROUPS_3D, sizeof(MaxNWGs),
-      &MaxNWGs, nullptr);
+  Plugin->call(urDeviceGetInfo, Device, UR_DEVICE_INFO_MAX_WORK_GROUPS_3D,
+               sizeof(MaxNWGs), &MaxNWGs, nullptr);
   for (unsigned int I = 0; I < NDRDesc.Dims; I++) {
     size_t NWgs = NDRDesc.GlobalSize[I] / NDRDesc.LocalSize[I];
     if (NWgs > MaxNWGs[I])
@@ -347,32 +341,32 @@ void handleInvalidValue(const device_impl &DeviceImpl,
       "Native API failed. Native API returns: " + codeToString(Error), Error);
 }
 
-void handleErrorOrWarning(pi_result Error, const device_impl &DeviceImpl,
-                          pi_kernel Kernel, const NDRDescT &NDRDesc) {
-  assert(Error != PI_SUCCESS &&
+void handleErrorOrWarning(ur_result_t Error, const device_impl &DeviceImpl,
+                          ur_kernel_handle_t Kernel, const NDRDescT &NDRDesc) {
+  assert(Error != UR_RESULT_SUCCESS &&
          "Success is expected to be handled on caller side");
   switch (Error) {
-  case PI_ERROR_INVALID_WORK_GROUP_SIZE:
+  case UR_RESULT_ERROR_INVALID_WORK_GROUP_SIZE:
     return handleInvalidWorkGroupSize(DeviceImpl, Kernel, NDRDesc);
 
-  case PI_ERROR_INVALID_KERNEL_ARGS:
+  case UR_RESULT_ERROR_INVALID_KERNEL_ARGS:
     throw sycl::nd_range_error(
         "The kernel argument values have not been specified "
         " OR "
         "a kernel argument declared to be a pointer to a type.",
         PI_ERROR_INVALID_KERNEL_ARGS);
 
-  case PI_ERROR_INVALID_WORK_ITEM_SIZE:
+  case UR_RESULT_ERROR_INVALID_WORK_ITEM_SIZE:
     return handleInvalidWorkItemSize(DeviceImpl, NDRDesc);
 
-  case PI_ERROR_IMAGE_FORMAT_NOT_SUPPORTED:
+  case UR_RESULT_ERROR_IMAGE_FORMAT_NOT_SUPPORTED:
     throw sycl::nd_range_error(
         "image object is specified as an argument value"
         " and the image format is not supported by device associated"
         " with queue",
         PI_ERROR_IMAGE_FORMAT_NOT_SUPPORTED);
 
-  case PI_ERROR_MISALIGNED_SUB_BUFFER_OFFSET:
+  case UR_RESULT_ERROR_MISALIGNED_SUB_BUFFER_OFFSET:
     throw sycl::nd_range_error(
         "a sub-buffer object is specified as the value for an argument "
         " that is a buffer object and the offset specified "
@@ -381,29 +375,29 @@ void handleErrorOrWarning(pi_result Error, const device_impl &DeviceImpl,
         " with queue",
         PI_ERROR_MISALIGNED_SUB_BUFFER_OFFSET);
 
-  case PI_ERROR_MEM_OBJECT_ALLOCATION_FAILURE:
+  case UR_RESULT_ERROR_MEM_OBJECT_ALLOCATION_FAILURE:
     throw sycl::nd_range_error(
         "failure to allocate memory for data store associated with image"
         " or buffer objects specified as arguments to kernel",
         PI_ERROR_MEM_OBJECT_ALLOCATION_FAILURE);
 
-  case PI_ERROR_INVALID_IMAGE_SIZE:
+  case UR_RESULT_ERROR_INVALID_IMAGE_SIZE:
     throw sycl::nd_range_error(
         "image object is specified as an argument value and the image "
         "dimensions (image width, height, specified or compute row and/or "
         "slice pitch) are not supported by device associated with queue",
         PI_ERROR_INVALID_IMAGE_SIZE);
 
-  case PI_ERROR_INVALID_VALUE:
+  case UR_RESULT_ERROR_INVALID_VALUE:
     return handleInvalidValue(DeviceImpl, NDRDesc);
 
-  case PI_ERROR_PLUGIN_SPECIFIC_ERROR:
+  case UR_RESULT_ERROR_ADAPTER_SPECIFIC:
     // checkPiResult does all the necessary handling for
     // PI_ERROR_PLUGIN_SPECIFIC_ERROR, making sure an error is thrown or not,
     // depending on whether PI_ERROR_PLUGIN_SPECIFIC_ERROR contains an error or
     // a warning. It also ensures that the contents of the error message buffer
     // (used only by PI_ERROR_PLUGIN_SPECIFIC_ERROR) get handled correctly.
-    return DeviceImpl.getPlugin()->checkPiResult(Error);
+    return DeviceImpl.getUrPlugin()->checkUrResult(Error);
 
     // TODO: Handle other error codes
 
@@ -416,13 +410,13 @@ void handleErrorOrWarning(pi_result Error, const device_impl &DeviceImpl,
 } // namespace detail::enqueue_kernel_launch
 
 namespace detail::kernel_get_group_info {
-void handleErrorOrWarning(pi_result Error, pi_kernel_group_info Descriptor,
-                          const PluginPtr &Plugin) {
-  assert(Error != PI_SUCCESS &&
+void handleErrorOrWarning(ur_result_t Error, ur_kernel_group_info_t Descriptor,
+                          const UrPluginPtr &Plugin) {
+  assert(Error != UR_RESULT_SUCCESS &&
          "Success is expected to be handled on caller side");
   switch (Error) {
-  case PI_ERROR_INVALID_VALUE:
-    if (Descriptor == CL_KERNEL_GLOBAL_WORK_SIZE)
+  case UR_RESULT_ERROR_INVALID_VALUE:
+    if (Descriptor == UR_KERNEL_GROUP_INFO_GLOBAL_WORK_SIZE)
       throw sycl::exception(
           sycl::make_error_code(errc::invalid),
           "info::kernel_device_specific::global_work_size descriptor may only "
@@ -431,7 +425,7 @@ void handleErrorOrWarning(pi_result Error, pi_kernel_group_info Descriptor,
     break;
   // TODO: Handle other error codes
   default:
-    Plugin->checkPiResult(Error);
+    Plugin->checkUrResult(Error);
     break;
   }
 }
