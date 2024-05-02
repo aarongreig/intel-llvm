@@ -291,7 +291,8 @@ template <>
 struct get_device_info_impl<std::vector<memory_scope>,
                             info::device::atomic_memory_scope_capabilities> {
   static std::vector<memory_scope> get(const DeviceImplPtr &Dev) {
-    ur_memory_scope_capability_flag_t result;
+    // TODO(pi2ur): Work around cuda/hip adapters reporting the wrong size
+    size_t result;
     Dev->getUrPlugin()->call(
         urDeviceGetInfo, Dev->getUrHandleRef(),
         UrInfoCode<info::device::atomic_memory_scope_capabilities>::value,
@@ -305,7 +306,8 @@ template <>
 struct get_device_info_impl<std::vector<memory_scope>,
                             info::device::atomic_fence_scope_capabilities> {
   static std::vector<memory_scope> get(const DeviceImplPtr &Dev) {
-    ur_memory_scope_capability_flag_t result;
+    // TODO(pi2ur): Work around cuda/hip adapters reporting the wrong size
+    size_t result;
     Dev->getUrPlugin()->call(
         urDeviceGetInfo, Dev->getUrHandleRef(),
         UrInfoCode<info::device::atomic_fence_scope_capabilities>::value,
