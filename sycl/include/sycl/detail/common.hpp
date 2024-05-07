@@ -166,20 +166,20 @@ inline std::string codeToString(pi_int32 code) {
 #define __SYCL_ASSERT(x) assert(x)
 #endif // #ifdef __SYCL_DEVICE_ONLY__
 
-#define __SYCL_PI_ERROR_REPORT                                                 \
+#define __SYCL_UR_ERROR_REPORT                                                 \
   "Native API failed. " /*__FILE__*/                                           \
   /* TODO: replace __FILE__ to report only relative path*/                     \
   /* ":" __SYCL_STRINGIFY(__LINE__) ": " */                                    \
                           "Native API returns: "
 
-#ifndef __SYCL_SUPPRESS_PI_ERROR_REPORT
+#ifndef __SYCL_SUPPRESS_UR_ERROR_REPORT
 #include <sycl/detail/iostream_proxy.hpp>
 // TODO: rename all names with direct use of OCL/OPENCL to be backend agnostic.
-#define __SYCL_REPORT_PI_ERR_TO_STREAM(expr)                                   \
+#define __SYCL_REPORT_UR_ERR_TO_STREAM(expr)                                   \
   {                                                                            \
     auto code = expr;                                                          \
-    if (code != PI_SUCCESS) {                                                  \
-      std::cerr << __SYCL_PI_ERROR_REPORT << sycl::detail::codeToString(code)  \
+    if (code != UR_RESULT_SUCCESS) {                                           \
+      std::cerr << __SYCL_UR_ERROR_REPORT << sycl::detail::codeToString(code)  \
                 << std::endl;                                                  \
     }                                                                          \
   }
@@ -188,24 +188,24 @@ inline std::string codeToString(pi_int32 code) {
 #ifndef SYCL_SUPPRESS_EXCEPTIONS
 #include <sycl/exception.hpp>
 // SYCL 1.2.1 exceptions
-#define __SYCL_REPORT_PI_ERR_TO_EXC(expr, exc, str)                            \
+#define __SYCL_REPORT_UR_ERR_TO_EXC(expr, exc, str)                            \
   {                                                                            \
     auto code = expr;                                                          \
     if (code != UR_RESULT_SUCCESS) {                                           \
       std::string err_str =                                                    \
           str ? "\n" + std::string(str) + "\n" : std::string{};                \
-      throw exc(__SYCL_PI_ERROR_REPORT + sycl::detail::codeToString(code) +    \
+      throw exc(__SYCL_UR_ERROR_REPORT + sycl::detail::codeToString(code) +    \
                     err_str,                                                   \
                 code);                                                         \
     }                                                                          \
   }
-#define __SYCL_REPORT_PI_ERR_TO_EXC_THROW(code, exc, str)                      \
-  __SYCL_REPORT_PI_ERR_TO_EXC(code, exc, str)
-#define __SYCL_REPORT_PI_ERR_TO_EXC_BASE(code)                                 \
-  __SYCL_REPORT_PI_ERR_TO_EXC(code, sycl::runtime_error, nullptr)
+#define __SYCL_REPORT_UR_ERR_TO_EXC_THROW(code, exc, str)                      \
+  __SYCL_REPORT_UR_ERR_TO_EXC(code, exc, str)
+#define __SYCL_REPORT_UR_ERR_TO_EXC_BASE(code)                                 \
+  __SYCL_REPORT_UR_ERR_TO_EXC(code, sycl::runtime_error, nullptr)
 #else
-#define __SYCL_REPORT_PI_ERR_TO_EXC_BASE(code)                                 \
-  __SYCL_REPORT_PI_ERR_TO_STREAM(code)
+#define __SYCL_REPORT_UR_ERR_TO_EXC_BASE(code)                                 \
+  __SYCL_REPORT_UR_ERR_TO_STREAM(code)
 #endif
 // SYCL 2020 exceptions
 #define __SYCL_REPORT_ERR_TO_EXC_VIA_ERRC(expr, errc)                          \
@@ -213,14 +213,14 @@ inline std::string codeToString(pi_int32 code) {
     auto code = expr;                                                          \
     if (code != UR_RESULT_SUCCESS) {                                           \
       throw sycl::exception(sycl::make_error_code(errc),                       \
-                            __SYCL_PI_ERROR_REPORT +                           \
+                            __SYCL_UR_ERROR_REPORT +                           \
                                 sycl::detail::codeToString(code));             \
     }                                                                          \
   }
 #define __SYCL_REPORT_ERR_TO_EXC_THROW_VIA_ERRC(code, errc)                    \
   __SYCL_REPORT_ERR_TO_EXC_VIA_ERRC(code, errc)
 
-#ifdef __SYCL_SUPPRESS_PI_ERROR_REPORT
+#ifdef __SYCL_SUPPRESS_UR_ERROR_REPORT
 // SYCL 1.2.1 exceptions
 #define __SYCL_CHECK_OCL_CODE(X) (void)(X)
 #define __SYCL_CHECK_OCL_CODE_THROW(X, EXC, STR)                               \
@@ -233,10 +233,10 @@ inline std::string codeToString(pi_int32 code) {
 #define __SYCL_CHECK_CODE_THROW_VIA_ERRC(X, ERRC) (void)(X)
 #else
 // SYCL 1.2.1 exceptions
-#define __SYCL_CHECK_OCL_CODE(X) __SYCL_REPORT_PI_ERR_TO_EXC_BASE(X)
+#define __SYCL_CHECK_OCL_CODE(X) __SYCL_REPORT_UR_ERR_TO_EXC_BASE(X)
 #define __SYCL_CHECK_OCL_CODE_THROW(X, EXC, STR)                               \
-  __SYCL_REPORT_PI_ERR_TO_EXC_THROW(X, EXC, STR)
-#define __SYCL_CHECK_OCL_CODE_NO_EXC(X) __SYCL_REPORT_PI_ERR_TO_STREAM(X)
+  __SYCL_REPORT_UR_ERR_TO_EXC_THROW(X, EXC, STR)
+#define __SYCL_CHECK_OCL_CODE_NO_EXC(X) __SYCL_REPORT_UR_ERR_TO_STREAM(X)
 // SYCL 2020 exceptions
 #define __SYCL_CHECK_CODE_THROW_VIA_ERRC(X, ERRC)                              \
   __SYCL_REPORT_ERR_TO_EXC_THROW_VIA_ERRC(X, ERRC)
