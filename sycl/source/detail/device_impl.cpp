@@ -269,7 +269,7 @@ device_impl::create_sub_devices(const std::vector<size_t> &Counts) const {
     TotalCounts += Count;
     NonZeroCounts += (Count != 0) ? 1 : 0;
     Props.push_back(ur_device_partition_property_t{
-        UR_DEVICE_PARTITION_BY_COUNTS, static_cast<uint32_t>(Count)});
+        UR_DEVICE_PARTITION_BY_COUNTS, {static_cast<uint32_t>(Count)}});
   }
 
   ur_device_partition_properties_t Properties{};
@@ -616,54 +616,54 @@ bool device_impl::has(aspect Aspect) const {
     return call_successful && support;
   }
   case aspect::ext_oneapi_bindless_sampled_image_fetch_1d_usm: {
-    pi_bool support = PI_FALSE;
+    ur_bool_t support = false;
     bool call_successful =
-        getPlugin()->call_nocheck<detail::PiApiKind::piDeviceGetInfo>(
-            MDevice,
-            PI_EXT_ONEAPI_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_1D_USM,
-            sizeof(pi_bool), &support, nullptr) == PI_SUCCESS;
+        getUrPlugin()->call_nocheck(urDeviceGetInfo,
+            MUrDevice,
+            UR_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_1D_USM_EXP,
+            sizeof(ur_bool_t), &support, nullptr) == UR_RESULT_SUCCESS;
     return call_successful && support;
   }
   case aspect::ext_oneapi_bindless_sampled_image_fetch_1d: {
-    pi_bool support = PI_FALSE;
+    ur_bool_t support = false;
     bool call_successful =
-        getPlugin()->call_nocheck<detail::PiApiKind::piDeviceGetInfo>(
-            MDevice, PI_EXT_ONEAPI_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_1D,
-            sizeof(pi_bool), &support, nullptr) == PI_SUCCESS;
+        getUrPlugin()->call_nocheck(urDeviceGetInfo,
+            MUrDevice, UR_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_1D_EXP,
+            sizeof(ur_bool_t), &support, nullptr) == UR_RESULT_SUCCESS;
     return call_successful && support;
   }
   case aspect::ext_oneapi_bindless_sampled_image_fetch_2d_usm: {
-    pi_bool support = PI_FALSE;
+    ur_bool_t support = false;
     bool call_successful =
-        getPlugin()->call_nocheck<detail::PiApiKind::piDeviceGetInfo>(
-            MDevice,
-            PI_EXT_ONEAPI_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_2D_USM,
-            sizeof(pi_bool), &support, nullptr) == PI_SUCCESS;
+        getUrPlugin()->call_nocheck(urDeviceGetInfo,
+            MUrDevice,
+            UR_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_2D_USM_EXP,
+            sizeof(ur_bool_t), &support, nullptr) == UR_RESULT_SUCCESS;
     return call_successful && support;
   }
   case aspect::ext_oneapi_bindless_sampled_image_fetch_2d: {
-    pi_bool support = PI_FALSE;
+    ur_bool_t support = false;
     bool call_successful =
-        getPlugin()->call_nocheck<detail::PiApiKind::piDeviceGetInfo>(
-            MDevice, PI_EXT_ONEAPI_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_2D,
-            sizeof(pi_bool), &support, nullptr) == PI_SUCCESS;
+        getUrPlugin()->call_nocheck(urDeviceGetInfo,
+            MUrDevice, UR_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_2D_EXP,
+            sizeof(ur_bool_t), &support, nullptr) == UR_RESULT_SUCCESS;
     return call_successful && support;
   }
   case aspect::ext_oneapi_bindless_sampled_image_fetch_3d_usm: {
-    pi_bool support = PI_FALSE;
+    ur_bool_t support = false;
     bool call_successful =
-        getPlugin()->call_nocheck<detail::PiApiKind::piDeviceGetInfo>(
-            MDevice,
-            PI_EXT_ONEAPI_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_3D_USM,
-            sizeof(pi_bool), &support, nullptr) == PI_SUCCESS;
+        getUrPlugin()->call_nocheck(urDeviceGetInfo,
+            MUrDevice,
+            UR_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_3D_USM_EXP,
+            sizeof(ur_bool_t), &support, nullptr) == UR_RESULT_SUCCESS;
     return call_successful && support;
   }
   case aspect::ext_oneapi_bindless_sampled_image_fetch_3d: {
-    pi_bool support = PI_FALSE;
+    ur_bool_t support = false;
     bool call_successful =
-        getPlugin()->call_nocheck<detail::PiApiKind::piDeviceGetInfo>(
-            MDevice, PI_EXT_ONEAPI_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_3D,
-            sizeof(pi_bool), &support, nullptr) == PI_SUCCESS;
+        getUrPlugin()->call_nocheck(urDeviceGetInfo,
+            MUrDevice, UR_DEVICE_INFO_BINDLESS_SAMPLED_IMAGE_FETCH_3D_EXP,
+            sizeof(ur_bool_t), &support, nullptr) == UR_RESULT_SUCCESS;
     return call_successful && support;
   }
   case aspect::ext_oneapi_cubemap: {

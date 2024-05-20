@@ -335,7 +335,7 @@ std::string device::ext_oneapi_cl_profile() const {
   auto res =
       Plugin->call_nocheck(urDeviceGetInfo, Device, UR_DEVICE_INFO_IP_VERSION,
                            sizeof(uint32_t), &ipVersion, nullptr);
-  if (res != PI_SUCCESS)
+  if (res != UR_RESULT_SUCCESS)
     return "";
 
   return ext::oneapi::experimental::detail::OpenCLC_Profile(ipVersion);

@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include "ur_api.h"
+
 namespace sycl {
 inline namespace _V1 {
 namespace ext::oneapi::experimental {
 /// Opaque image memory handle type
 struct image_mem_handle {
-  using handle_type = void *;
+  using handle_type = ur_exp_image_mem_handle_t;
   handle_type raw_handle;
 };
 } // namespace ext::oneapi::experimental
