@@ -225,22 +225,14 @@ make_kernel_bundle(ur_native_handle_t NativeHandle,
     switch (BinaryType) {
     case (UR_PROGRAM_BINARY_TYPE_NONE):
       if (State == bundle_state::object) {
-        auto Res = Adapter->call_nocheck<UrApiKind::urProgramCompileExp>(
+        auto Res = Adapter->call_nocheck<UrApiKind::urProgramCompile>(
             UrProgram, 1, &Dev, nullptr);
-        if (Res == UR_RESULT_ERROR_UNSUPPORTED_FEATURE) {
-          Res = Adapter->call_nocheck<UrApiKind::urProgramCompile>(
-              ContextImpl->getHandleRef(), UrProgram, nullptr);
-        }
         Adapter->checkUrResult<errc::build>(Res);
       }
 
       else if (State == bundle_state::executable) {
-        auto Res = Adapter->call_nocheck<UrApiKind::urProgramBuildExp>(
+        auto Res = Adapter->call_nocheck<UrApiKind::urProgramBuild>(
             UrProgram, 1, &Dev, nullptr);
-        if (Res == UR_RESULT_ERROR_UNSUPPORTED_FEATURE) {
-          Res = Adapter->call_nocheck<UrApiKind::urProgramBuild>(
-              ContextImpl->getHandleRef(), UrProgram, nullptr);
-        }
         Adapter->checkUrResult<errc::build>(Res);
       }
 
@@ -254,14 +246,9 @@ make_kernel_bundle(ur_native_handle_t NativeHandle,
                 detail::codeToString(UR_RESULT_ERROR_INVALID_VALUE));
       if (State == bundle_state::executable) {
         ur_program_handle_t UrLinkedProgram = nullptr;
-        auto Res = Adapter->call_nocheck<UrApiKind::urProgramLinkExp>(
+        auto Res = Adapter->call_nocheck<UrApiKind::urProgramLink>(
             ContextImpl->getHandleRef(), 1, &Dev, 1, &UrProgram, nullptr,
             &UrLinkedProgram);
-        if (Res == UR_RESULT_ERROR_UNSUPPORTED_FEATURE) {
-          Res = Adapter->call_nocheck<UrApiKind::urProgramLink>(
-              ContextImpl->getHandleRef(), 1, &UrProgram, nullptr,
-              &UrLinkedProgram);
-        }
         Adapter->checkUrResult<errc::build>(Res);
         if (UrLinkedProgram != nullptr) {
           UrProgram = UrLinkedProgram;
