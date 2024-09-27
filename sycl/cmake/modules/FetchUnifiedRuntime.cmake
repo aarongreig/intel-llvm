@@ -116,14 +116,14 @@ if(SYCL_UR_USE_FETCH_CONTENT)
       CACHE PATH "Path to external '${name}' adapter source dir" FORCE)
   endfunction()
 
-  set(UNIFIED_RUNTIME_REPO "https://github.com/nrspruit/unified-runtime.git")
-  # commit 6298474e628889d3598b9416303a52e67a2b66aa
-  # Merge: 3cd6eaeb 4bb6a103
+  set(UNIFIED_RUNTIME_REPO "https://github.com/oneapi-src/unified-runtime.git")
+  # commit ce0325da13048af40acd61bd43ef88bafd84c6b3
+  # Merge: 2ad32681 668c5e5d
   # Author: Piotr Balcer <piotr.balcer@intel.com>
-  # Date:   Wed Sep 18 09:20:05 2024 +0200
-  #   Merge pull request #2093 from lslusarczyk/memleak-fix
-  #   fixed issue #1990, L0 leaks checker counts successful create/destroy only
-  set(UNIFIED_RUNTIME_TAG 5713046b56eb85ecf2f017b352ce3e791bead190)
+  # Date:   Thu Sep 26 10:51:57 2024 +0200
+  #     Merge pull request #2134 from nrspruit/fix_multi_device_event_driver_in_order_syclos
+  #     [L0] Fix Multi Device Event handling and remove unhandled events from in order wait list
+  set(UNIFIED_RUNTIME_TAG ce0325da13048af40acd61bd43ef88bafd84c6b3)
 
   set(UMF_BUILD_EXAMPLES OFF CACHE INTERNAL "EXAMPLES")
   # Due to the use of dependentloadflag and no installer for UMF and hwloc we need
