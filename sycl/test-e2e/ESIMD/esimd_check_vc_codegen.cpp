@@ -91,6 +91,6 @@ int main(void) {
   return err_cnt > 0 ? 1 : 0;
 }
 
-// CHECK: ---> urProgramBuild(
+// CHECK: <--- urProgramBuild(
 // CHECK-SAME: .pOptions = {{.*}}-vc-codegen
 // CHECK-SAME: -> UR_RESULT_SUCCESS

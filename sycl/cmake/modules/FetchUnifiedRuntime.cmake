@@ -117,12 +117,6 @@ if(SYCL_UR_USE_FETCH_CONTENT)
   endfunction()
 
   set(UNIFIED_RUNTIME_REPO "https://github.com/aarongreig/unified-runtime.git")
-  # commit f5c907a0f74fd6729be5c2e137144f1a43f87111
-  # Merge: 9ca3ec7 be38e567
-  # Author: aarongreig <aaron.greig@codeplay.com>
-  # Date:   Mon Sep 23 08:27:12 2024 -0700
-  #     Merge pull request #1830 from JackAKirk/hip-set-device
-  #     [hip] Remove deprecated hip APIs, simplify urContext
   set(UNIFIED_RUNTIME_TAG aaron/makeDeviceCompileExtCore)
 
   set(UMF_BUILD_EXAMPLES OFF CACHE INTERNAL "EXAMPLES")

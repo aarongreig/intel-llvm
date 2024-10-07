@@ -43,7 +43,7 @@ int main() {
 }
 
 // --- Check that only a single program is built:
-// CHECK: ---> urProgramBuild
-// CHECK-NOT: ---> urProgramBuild
+// CHECK: <--- urProgramBuild
+// CHECK-NOT: <--- urProgramBuild
 // --- Check that the test completed with expected results:
 // CHECK: passed

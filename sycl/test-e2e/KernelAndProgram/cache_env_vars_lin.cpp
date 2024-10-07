@@ -22,12 +22,12 @@
 // RUN: env SYCL_CACHE_PERSISTENT=1 HOME=%t/cache_dir SYCL_UR_TRACE=2 env -u XDG_CACHE_HOME env -u SYCL_CACHE_DIR %{run} %t.out | FileCheck %s --check-prefixes=CHECK-BUILD
 // RUN: env SYCL_CACHE_PERSISTENT=1 HOME=%t/cache_dir SYCL_UR_TRACE=2 env -u XDG_CACHE_HOME env -u SYCL_CACHE_DIR %{run} %t.out | FileCheck %s --check-prefixes=CHECK-CACHE
 
-// CHECK-BUILD-NOT: urProgramCreateWithBinary(
-// CHECK-BUILD: urProgramCreateWithIL(
-// CHECK-BUILD: urProgramBuild(
+// CHECK-BUILD-NOT: <--- urProgramCreateWithBinary(
+// CHECK-BUILD: <--- urProgramCreateWithIL(
+// CHECK-BUILD: <--- urProgramBuild(
 
-// CHECK-CACHE-NOT: urProgramCreateWithIL(
-// CHECK-CACHE: urProgramCreateWithBinary(
-// CHECK-CACHE: urProgramBuild(
+// CHECK-CACHE-NOT: <--- urProgramCreateWithIL(
+// CHECK-CACHE: <--- urProgramCreateWithBinary(
+// CHECK-CACHE: <--- urProgramBuild(
 
 #include "cache_env_vars.hpp"
