@@ -1590,11 +1590,10 @@ ProgramManager::ProgramPtr ProgramManager::build(
 
   ur_program_handle_t LinkedProg = nullptr;
   auto doLink = [&] {
-    auto Res = Adapter->call_nocheck<UrApiKind::urProgramLink>(
+    return Adapter->call_nocheck<UrApiKind::urProgramLink>(
         Context->getHandleRef(),
         /*num devices =*/1, &Device, LinkPrograms.size(), LinkPrograms.data(),
         LinkOptions.c_str(), &LinkedProg);
-    return Res;
   };
   ur_result_t Error = doLink();
   if (Error == UR_RESULT_ERROR_OUT_OF_RESOURCES ||
