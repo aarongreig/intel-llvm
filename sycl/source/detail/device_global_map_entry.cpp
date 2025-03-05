@@ -41,6 +41,56 @@ OwnedUrEvent DeviceGlobalUSMMem::getInitEvent(const AdapterPtr &Adapter) {
   return OwnedUrEvent(Adapter);
 }
 
+DeviceGlobalUSMMem &
+DeviceGlobalMapEntry::getOrAllocateDeviceGlobalUSM(const context &Context) {
+  assert(!MIsDeviceImageScopeDecorated &&
+         "USM allocations should not be acquired for device_global with "
+         "device_image_scope property.");
+  const std::shared_ptr<context_impl> &CtxImpl = getSyclObjImpl(Context);
+  const std::shared_ptr<device_impl> &DevImpl =
+      getSyclObjImpl(CtxImpl->getDevices().front());
+  std::lock_guard<std::mutex> Lock(MDeviceToUSMPtrMapMutex);
+
+  auto DGUSMPtr = MDeviceToUSMPtrMap.find({DevImpl.get(), CtxImpl.get()});
+  if (DGUSMPtr != MDeviceToUSMPtrMap.end())
+    return DGUSMPtr->second;
+
+  void *NewDGUSMPtr = detail::usm::alignedAllocInternal(
+      0, MDeviceGlobalTSize, CtxImpl.get(), DevImpl.get(),
+      sycl::usm::alloc::device);
+
+  auto NewAllocIt = MDeviceToUSMPtrMap.emplace(
+      std::piecewise_construct,
+      std::forward_as_tuple(DevImpl.get(), CtxImpl.get()),
+      std::forward_as_tuple(NewDGUSMPtr));
+  assert(NewAllocIt.second &&
+         "USM allocation for device and context already happened.");
+  DeviceGlobalUSMMem &NewAlloc = NewAllocIt.first->second;
+
+  // Initialize here and save the event.
+  {
+    std::lock_guard<std::mutex> Lock(NewAlloc.MInitEventMutex);
+    ur_event_handle_t InitEvent;
+    // C++ guarantees members appear in memory in the order they are declared,
+    // so since the member variable that contains the initial contents of the
+    // device_global is right after the usm_ptr member variable we can do
+    // some pointer arithmetic to memcopy over this value to the usm_ptr. This
+    // value inside of the device_global will be zero-initialized if it was not
+    // given a value on construction.
+
+    MemoryManager::context_copy_usm(
+        reinterpret_cast<const void *>(
+            reinterpret_cast<uintptr_t>(MDeviceGlobalPtr) +
+            sizeof(MDeviceGlobalPtr)),
+        CtxImpl, MDeviceGlobalTSize, NewAlloc.MPtr);
+    // do we need this?
+    // NewAlloc.MInitEvent = InitEvent;
+  }
+
+  CtxImpl->addAssociatedDeviceGlobal(MDeviceGlobalPtr);
+  return NewAlloc;
+}
+
 DeviceGlobalUSMMem &DeviceGlobalMapEntry::getOrAllocateDeviceGlobalUSM(
     const std::shared_ptr<queue_impl> &QueueImpl) {
   assert(!MIsDeviceImageScopeDecorated &&

@@ -812,13 +812,7 @@ public:
                             "'device_image_scope' property");
     }
 
-    // TODO: Is this the right approach? Should we just pass the queue as an
-    //       argument?
-    queue InitQueue{MContext, Dev};
-    auto &USMMem =
-        Entry->getOrAllocateDeviceGlobalUSM(getSyclObjImpl(InitQueue));
-    InitQueue.wait_and_throw();
-    return USMMem.getPtr();
+    return Entry->getOrAllocateDeviceGlobalUSM(MContext).getPtr();
   }
 
   size_t ext_oneapi_get_device_global_size(const std::string &Name,

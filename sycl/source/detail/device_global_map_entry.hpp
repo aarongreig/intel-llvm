@@ -112,6 +112,7 @@ struct DeviceGlobalMapEntry {
   DeviceGlobalUSMMem &
   getOrAllocateDeviceGlobalUSM(const std::shared_ptr<queue_impl> &QueueImpl);
 
+  DeviceGlobalUSMMem &getOrAllocateDeviceGlobalUSM(const context &Context);
   // Removes resources for device_globals associated with the context.
   void removeAssociatedResources(const context_impl *CtxImpl);
 

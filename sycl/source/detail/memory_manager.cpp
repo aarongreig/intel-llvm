@@ -907,6 +907,17 @@ void MemoryManager::unmap(SYCLMemObjI *, void *Mem, QueueImplPtr Queue,
                  MappedPtr, DepEvents.size(), DepEvents.data(), &OutEvent);
 }
 
+void MemoryManager::context_copy_usm(const void *SrcMem, ContextImplPtr Context,
+                                     size_t Len, void *DstMem) {
+  if (!SrcMem || !DstMem)
+    throw exception(make_error_code(errc::invalid),
+                    "NULL pointer argument in memory copy operation.");
+
+  const AdapterPtr &Adapter = Context->getAdapter();
+  Adapter->call<UrApiKind::urUSMContextMemcpyExp>(Context->getHandleRef(),
+                                                  DstMem, SrcMem, Len);
+}
+
 void MemoryManager::copy_usm(const void *SrcMem, QueueImplPtr SrcQueue,
                              size_t Len, void *DstMem,
                              std::vector<ur_event_handle_t> DepEvents,
