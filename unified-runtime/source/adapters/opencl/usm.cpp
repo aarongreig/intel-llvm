@@ -774,3 +774,17 @@ UR_APIEXPORT ur_result_t UR_APICALL urUSMPoolTrimToExp(ur_context_handle_t,
                                                        size_t) {
   return UR_RESULT_ERROR_UNSUPPORTED_FEATURE;
 }
+
+UR_APIEXPORT ur_result_t UR_APICALL urUSMContextMemcpyExp(
+    ur_context_handle_t hContext, void *pDst, const void* pSrc, size_t size) {
+  ur_device_handle_t device = nullptr;
+  UR_RETURN_ON_FAILURE(urUSMGetMemAllocInfo(hContext, pSrc,
+                                            UR_USM_ALLOC_INFO_DEVICE,
+                                            sizeof(device), &device, nullptr));
+  ur_queue_handle_t queue = nullptr;
+  UR_RETURN_ON_FAILURE(urQueueCreate(hContext, device, nullptr, &queue));
+  UR_RETURN_ON_FAILURE(
+      urEnqueueUSMMemcpy(queue, true, pDst, pSrc, size, 0, nullptr, nullptr));
+  UR_RETURN_ON_FAILURE(urQueueRelease(queue));
+  return UR_RESULT_SUCCESS;
+}
